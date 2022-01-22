@@ -1,3 +1,5 @@
+import "reflect-metadata"
+
 const main = async () => {
   console.log("main servr")
 }
