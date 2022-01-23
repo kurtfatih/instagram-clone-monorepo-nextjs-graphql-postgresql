@@ -8,6 +8,8 @@
     "build": "rimraf ./build && tsc"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "^17.0.10",
     "nodemon": "^2.0.15",
     "rimraf": "^3.0.2",
@@ -16,8 +18,13 @@
   },
   "dependencies": {
     "apollo-server": "^3.6.2",
+    "bcrypt": "^5.0.1",
     "class-validator": "^0.13.2",
-    "graphql": "^16.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^14.2.0",
+    "express": "^4.17.2",
+    "graphql": "^15.3.0",
+    "jsonwebtoken": "^8.5.1",
     "pg": "^8.7.1",
     "type-graphql": "^1.1.1",
     "typeorm": "^0.2.41"
