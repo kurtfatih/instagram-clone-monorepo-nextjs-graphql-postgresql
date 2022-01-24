@@ -4,10 +4,12 @@ import "dotenv/config"
 import cors from "cors"
 import "reflect-metadata"
 import { buildSchema } from "type-graphql"
-import { Any, createConnection, getRepository } from "typeorm"
+import { Any, createConnection, getConnection, getRepository } from "typeorm"
 import { SharedContextType } from "./context/types"
 import { UserResolver } from "./resolvers/UserResolver"
 import { IncomingMessage } from "http"
+import { PostResolver } from "./resolvers/PostResolver"
+import { ApolloServerLoaderPlugin } from "type-graphql-dataloader"
 
 const main = async () => {
   console.log("main servr")
@@ -20,13 +22,13 @@ const main = async () => {
     password: "asd",
     database: "postgres",
     entities: ["src/entities/**/*.ts"],
-    migrations: ["src/migration/**/*.ts"], //   subscribers: ["src/subscriber/**/*.ts"],
+    migrations: ["src/migration/**/*.ts"],
+    subscribers: ["src/subscriber/**/*.ts"],
     cli: {
       entitiesDir: "src/entities",
       migrationsDir: "src/migration",
       subscribersDir: "src/subscriber"
-    },
-    synchronize: true
+    }
   }).then(() => console.log("db create succesfully"))
 
   // {
@@ -47,16 +49,26 @@ const main = async () => {
   //   }
   // }
   const schema = await buildSchema({
-    resolvers: [UserResolver]
+    resolvers: [UserResolver, PostResolver]
   })
   // A map of functions which return data for the schema.
 
   const server = new ApolloServer({
     schema,
     cors: { origin: "*", credentials: true, methods: ["GET", "POST"] },
-
+    plugins: [
+      ApolloServerLoaderPlugin({
+        typeormGetConnection: getConnection // for use with TypeORM
+      })
+    ],
     context: async ({ req, res }): Promise<SharedContextType> => {
-      return { req, res, repo: getRepository, payload: "" }
+      return {
+        req,
+        res,
+        repo: getRepository,
+        payload: "",
+        connection: getConnection
+      }
     }
   })
   server.listen().then(({ url }) => {

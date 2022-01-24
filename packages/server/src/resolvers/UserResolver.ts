@@ -16,8 +16,8 @@ import { isAuth, isLoggedIn } from "../middleware/checkIsUsert"
 
 @Resolver(User)
 export class UserResolver {
+  // @UseMiddleware(isAuth)
   @Query(() => [User])
-  @UseMiddleware(isAuth)
   async users(@Ctx() { repo }: SharedContextType) {
     console.log("what")
 
@@ -30,12 +30,15 @@ export class UserResolver {
   async login(
     @Arg("email") email: string,
     @Arg("password") password: string
-    // @Ctx() {req}: SharedContextType
   ): Promise<string> {
     let userToken = ""
     const userMatchWithEmail = await User.find({ email })
     const user = userMatchWithEmail[0]
-    const userJwtPayload = { email: email, displayName: user.displayName }
+    const userJwtPayload = {
+      id: user.id,
+      email: email,
+      displayName: user.displayName
+    }
     const userHashedPassword = user.password
     const isMatch = bcrypt.compareSync(password, userHashedPassword) // true
     if (isMatch) {

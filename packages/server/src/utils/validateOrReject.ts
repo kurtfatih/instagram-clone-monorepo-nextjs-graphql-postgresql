@@ -1,15 +1,18 @@
-import { validateOrReject, ValidationError } from "class-validator"
+import { validate } from "class-validator"
 
-export const isValidateOrReject = async <T extends {}>(
-  input: T,
+export const validateWrap = async <T extends {}>(
+  res: T,
   cb: () => Promise<T>
 ) => {
-  try {
-    await validateOrReject(input)
-    await cb()
-    return true
-  } catch (e) {
-    console.log(e)
-    return false
-  }
+  await validate(res)
+    .then(async (errors) => {
+      // errors is an array of validation errors
+      if (errors.length > 0) {
+        console.log(errors)
+        return false
+      } else {
+        await cb()
+      }
+    })
+    .catch((e) => console.log(e))
 }

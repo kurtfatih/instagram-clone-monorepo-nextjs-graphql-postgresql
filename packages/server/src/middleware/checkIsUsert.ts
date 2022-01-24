@@ -16,10 +16,11 @@ export const isAuth: MiddlewareFn<SharedContextType> = ({ context }, next) => {
   }
   const token = authorization.split(" ")[1]
 
-  console.log("token", token)
+  // console.log("token", token)
   const payload = verify(token, process.env.JWT_SECRET_KEY)
+  console.log("check this out here", token, payload)
 
-  console.log(payload)
+  // console.log(payload)
   context.payload = payload
   return next()
 }
