@@ -48,6 +48,37 @@ export class UserResolver {
     return user
   }
 
+  @UseMiddleware(isAuth)
+  @Query(() => [User] || Error, { nullable: true })
+  async findFriends(
+    @Ctx() { userJwtPayload }: SharedContextType
+  ): Promise<User[] | Error> {
+    if (!userJwtPayload) throw new Error("Someting went wrong")
+    const user = await User.findOne(userJwtPayload.id)
+    if (!user) throw new Error("smt went wrong")
+    return user.friends
+  }
+
+  @UseMiddleware(isAuth)
+  @Mutation(() => Boolean || Error)
+  async addFriends(
+    @Arg("friends_id") friendsId: string,
+    @Ctx() { userJwtPayload }: SharedContextType
+  ): Promise<boolean | Error> {
+    if (!userJwtPayload) throw new Error("smt went wrong")
+    const user = await User.findOne(userJwtPayload.id)
+    const friendUser = await User.findOne(friendsId)
+    if (!user) throw new Error("smt went wrong")
+    if (!friendUser) throw new Error("smt went wrong")
+    console.log("my friends ", user, friendUser)
+    if (user.friends && user.friends.length > 0) {
+      user.friends.push(friendUser)
+    } else {
+      user.friends = [friendUser]
+    }
+    await user.save()
+    return true
+  }
   @Mutation(() => String)
   async login(
     @Arg("loginData") { email, password }: UserLoginInput

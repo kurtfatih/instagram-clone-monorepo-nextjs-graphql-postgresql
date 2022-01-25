@@ -34,7 +34,10 @@ export class Comments extends BaseEntity {
   likes: number = 0
 
   @Field(() => Post)
-  @ManyToOne(() => Post, (post) => post.comments, { primary: true })
+  @ManyToOne(() => Post, (post) => post.comments, {
+    primary: true,
+    onDelete: "CASCADE"
+  })
   @TypeormLoader()
   post: Post
 }

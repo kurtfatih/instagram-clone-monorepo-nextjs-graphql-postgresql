@@ -31,7 +31,7 @@ export class Post extends BaseEntity {
   @Field({ nullable: true })
   description?: string
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.posts, { onDelete: "CASCADE" })
   @Field(() => User)
   @TypeormLoader()
   user: User
@@ -42,7 +42,7 @@ export class Post extends BaseEntity {
   likes: number = 0
 
   @Field(() => [Comments], { nullable: true })
-  @OneToMany(() => Comments, (comment) => comment.post, { cascade: true })
+  @OneToMany(() => Comments, (comment) => comment.post)
   @TypeormLoader()
   comments: Comments[]
 }

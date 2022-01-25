@@ -5,6 +5,8 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm"
@@ -24,7 +26,10 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string
 
-  @OneToMany(() => Post, (post) => post.user, { cascade: true })
+  @OneToMany(() => Post, (post) => post.user, {
+    cascade: true,
+    onDelete: "CASCADE"
+  })
   @Field(() => [Post])
   @TypeormLoader()
   posts: Post[]
@@ -45,6 +50,12 @@ export class User extends BaseEntity {
     message: getErrorMessageWithClassValidatorMessage("displayName")
   })
   displayName: string
+
+  @ManyToMany(() => User, { lazy: true })
+  @JoinTable()
+  @Field(() => [User], { nullable: true })
+  @TypeormLoader((user: User) => [user.id])
+  friends: User[]
 
   @Column()
   @Field()
