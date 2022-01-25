@@ -16,8 +16,8 @@ import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError
 
 @InputType({ description: "Update Post Input That" })
 class UpdatePostInput implements Partial<Post> {
-  @Field({ nullable: true })
-  description?: string
+  @Field()
+  description: string
 }
 
 @Resolver(Post)
@@ -41,12 +41,62 @@ export class PostResolver {
     // validateWrap(res, res.save)
   }
 
-  // @Mutation() async deletePostById(@Ctx() { repo }: SharedContextType) {
-  //   const posts = await repo(Post).createQueryBuilder("users").getMany()
-  //   return posts
-  // }
-  // @Mutation() async updatePostById(@Ctx() { repo }: SharedContextType) {
-  //   const posts = await repo(Post).createQueryBuilder("users").getMany()
-  //   return posts
-  // }
+  @UseMiddleware(isAuth)
+  @Mutation(() => Boolean || Error)
+  async deletePostById(
+    @Arg("post_id") postId: string,
+    @Ctx() { userJwtPayload }: SharedContextType
+  ): Promise<boolean | Error> {
+    const userPost = await User.findOneOrFail(userJwtPayload?.id, {
+      relations: ["posts"]
+    })
+    const post = userPost.posts.find(({ id }) => id === postId)
+    if (!post) throw new Error("Something went wrong")
+    await post.remove()
+    return true
+  }
+
+  @UseMiddleware(isAuth)
+  @Mutation(() => Boolean || Error)
+  async updatePostDescriptionById(
+    @Arg("post_id") postId: string,
+    @Arg("description") description: string,
+    @Ctx() { userJwtPayload }: SharedContextType
+  ): Promise<boolean | Error> {
+    const userPost = await User.findOneOrFail(userJwtPayload?.id, {
+      relations: ["posts"]
+    })
+    const post = userPost.posts.find(({ id }) => id === postId)
+    if (!post) throw new Error("Someting went wrong")
+    await Post.update({ id: post.id }, { description })
+    return true
+  }
+
+  @UseMiddleware(isAuth)
+  @Mutation(() => Boolean || Error)
+  async likePost(
+    @Arg("post_id") postId: string,
+    @Arg("initialLike") initialLike: number
+  ): Promise<boolean | Error> {
+    try {
+      await Post.update({ id: postId }, { likes: initialLike + 1 })
+      return true
+    } catch {
+      throw new Error("Someting went wrong")
+    }
+  }
+
+  @UseMiddleware(isAuth)
+  @Mutation(() => Boolean || Error)
+  async dislikePost(
+    @Arg("post_id") postId: string,
+    @Arg("initialLike") initialLike: number
+  ): Promise<boolean | Error> {
+    try {
+      await Post.update({ id: postId }, { likes: initialLike - 1 })
+      return true
+    } catch {
+      throw new Error("Someting went wrong")
+    }
+  }
 }

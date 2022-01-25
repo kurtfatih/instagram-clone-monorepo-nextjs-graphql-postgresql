@@ -6,7 +6,8 @@ import {
   Field,
   Mutation,
   UseMiddleware,
-  InputType
+  InputType,
+  FieldResolver
 } from "type-graphql"
 import { RoleType, User } from "../entities/User"
 import bcrypt from "bcrypt"
@@ -15,7 +16,7 @@ import { SharedContextType } from "../context/types"
 import { saltRounds } from "../constants/bcyrptconstant"
 import { validate } from "class-validator"
 import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
-import { isAdmin, isAuth } from "../middleware/checkIsUsert"
+import { isAuth } from "../middleware/checkIsUsert"
 
 @InputType()
 export class UserLoginInput implements Partial<User> {
@@ -38,6 +39,15 @@ export class UserAdditionalInfoInput implements Partial<User> {
 
 @Resolver(User)
 export class UserResolver {
+  @UseMiddleware(isAuth)
+  @Query(() => User)
+  async getUserById(@Ctx() { userJwtPayload }: SharedContextType) {
+    if (!userJwtPayload) throw new Error("Someting went wrong")
+    const user = await User.findOne(userJwtPayload.id)
+    if (!user) throw new Error("Someting went wrong")
+    return user
+  }
+
   @Mutation(() => String)
   async login(
     @Arg("loginData") { email, password }: UserLoginInput

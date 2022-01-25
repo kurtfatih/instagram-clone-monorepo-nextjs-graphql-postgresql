@@ -1,7 +1,7 @@
 const minimumDisplayNameLength = 3
 const minimumPasswordLength = 6
 
-const maxDescriptionLength = 6
+const maxDescriptionLength = 300
 const maxCommentLength = 2200
 const getErrorMessageWithClassValidatorMessage = (
   property: string,
