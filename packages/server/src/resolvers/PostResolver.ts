@@ -22,20 +22,14 @@ class UpdatePostInput implements Partial<Post> {
 
 @Resolver(Post)
 export class PostResolver {
-  @Query(() => [Post])
-  async getAllPosts(): Promise<Post[]> {
-    const allPost = await Post.find()
-    return allPost
-  }
-
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean)
   async createPost(
     @Arg("postInput") { description }: UpdatePostInput,
-    @Ctx() { payload }: SharedContextType
+    @Ctx() { userJwtPayload }: SharedContextType
   ): Promise<true | Error> {
-    const { id } = payload as { id: string; email: string; displayName: string }
-    console.log("userid", id)
+    if (!userJwtPayload) throw new Error("User payload couldn find")
+    const { id } = userJwtPayload
 
     const newPost = Post.create({
       description: description,
@@ -47,11 +41,6 @@ export class PostResolver {
     // validateWrap(res, res.save)
   }
 
-  @Mutation(() => Boolean)
-  async deleteAllPosts(): Promise<boolean> {
-    await Post.createQueryBuilder().delete().execute()
-    return true
-  }
   // @Mutation() async deletePostById(@Ctx() { repo }: SharedContextType) {
   //   const posts = await repo(Post).createQueryBuilder("users").getMany()
   //   return posts

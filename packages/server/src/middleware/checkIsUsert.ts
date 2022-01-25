@@ -1,8 +1,9 @@
 import { MiddlewareFn } from "type-graphql"
-import { verify } from "jsonwebtoken"
-import { SharedContextType } from "../context/types"
+import { verify, JwtPayload } from "jsonwebtoken"
+import { SharedContextType, userJWTPayloadType } from "../context/types"
 
 //format like bearer 21321n2bmbbj
+
 export const isAuth: MiddlewareFn<SharedContextType> = ({ context }, next) => {
   const authorization = context.req.headers.authorization
 
@@ -19,21 +20,14 @@ export const isAuth: MiddlewareFn<SharedContextType> = ({ context }, next) => {
   // console.log("token", token)
   const payload = verify(token, process.env.JWT_SECRET_KEY)
   console.log("check this out here", token, payload)
-
-  // console.log(payload)
-  context.payload = payload
+  if (!payload) throw new Error("PAYLOAD JWT ERROR")
+  console.log(payload)
+  context.userJwtPayload = payload as userJWTPayloadType
   return next()
 }
-
-export const isLoggedIn: MiddlewareFn<SharedContextType> = async (
-  { context },
-  next
-) => {
-  console.log("context payload", !context.payload)
-  if (!context.payload) {
-    console.log("run next hit")
-    // run next if user not already logged in
-    return next()
-  }
-  throw new Error("user already logged in")
+export const isAdmin: MiddlewareFn<SharedContextType> = ({ context }, next) => {
+  const payload = context.userJwtPayload
+  if (!payload) throw new Error("There is no payload to check your role ")
+  if (payload.role === "ADMIN") return next()
+  throw new Error("You have to be admin")
 }

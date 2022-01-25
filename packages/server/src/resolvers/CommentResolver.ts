@@ -5,12 +5,6 @@ import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError
 
 @Resolver(Comments)
 export class CommentsResolver {
-  @Query(() => [Comments])
-  async getAllComments(): Promise<Comments[]> {
-    const allComments = await Comments.find()
-    return allComments
-  }
-
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean)
   async createComment(
@@ -36,11 +30,5 @@ export class CommentsResolver {
     } catch {
       throw Error("someting went wrong")
     }
-  }
-
-  @Mutation(() => Boolean)
-  async deleteAllComments(): Promise<boolean> {
-    await Comments.createQueryBuilder().delete().execute()
-    return true
   }
 }

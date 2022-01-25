@@ -15,6 +15,8 @@ import {
 } from "../constants/validationconstants"
 import { Post } from "./Post"
 
+export type RoleType = "ADMIN" | "MODERATOR" | "USER"
+
 @Entity("User")
 @ObjectType()
 export class User extends BaseEntity {
@@ -31,6 +33,10 @@ export class User extends BaseEntity {
   @Field()
   @IsEmail()
   email: string
+
+  @Column({ default: "USER" })
+  @Field(() => String, { defaultValue: "USER" })
+  role: string
 
   @IsString()
   @Column()

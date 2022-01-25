@@ -3,12 +3,13 @@ import { ApolloServer, gql } from "apollo-server"
 import "dotenv/config"
 import "reflect-metadata"
 import { buildSchema } from "type-graphql"
-import {  createConnection, getConnection, getRepository } from "typeorm"
+import { createConnection, getConnection, getRepository } from "typeorm"
 import { SharedContextType } from "./context/types"
 import { UserResolver } from "./resolvers/UserResolver"
 import { PostResolver } from "./resolvers/PostResolver"
 import { ApolloServerLoaderPlugin } from "type-graphql-dataloader"
 import { CommentsResolver } from "./resolvers/CommentResolver"
+import { AdminResolver } from "./resolvers/AdminResolver"
 
 const main = async () => {
   console.log("main servr")
@@ -32,7 +33,7 @@ const main = async () => {
   }).then(() => console.log("db create succesfully"))
 
   const schema = await buildSchema({
-    resolvers: [UserResolver, PostResolver, CommentsResolver]
+    resolvers: [UserResolver, PostResolver, CommentsResolver, AdminResolver]
   })
   // A map of functions which return data for the schema.
 
@@ -49,7 +50,7 @@ const main = async () => {
         req,
         res,
         repo: getRepository,
-        payload: "",
+        userJwtPayload: null,
         connection: getConnection
       }
     }

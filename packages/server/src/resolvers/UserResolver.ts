@@ -3,32 +3,44 @@ import {
   Query,
   Arg,
   Ctx,
+  Field,
   Mutation,
-  UseMiddleware
+  UseMiddleware,
+  InputType
 } from "type-graphql"
-import { User } from "../entities/User"
+import { RoleType, User } from "../entities/User"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { SharedContextType } from "../context/types"
 import { saltRounds } from "../constants/bcyrptconstant"
 import { validate } from "class-validator"
-import { isLoggedIn } from "../middleware/checkIsUsert"
 import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
+import { isAdmin, isAuth } from "../middleware/checkIsUsert"
+
+@InputType()
+export class UserLoginInput implements Partial<User> {
+  @Field()
+  email: string
+  @Field()
+  password: string
+}
+
+@InputType()
+export class UserCreateInput extends UserLoginInput {
+  @Field()
+  displayName: string
+}
+@InputType()
+export class UserAdditionalInfoInput implements Partial<User> {
+  @Field()
+  role: RoleType
+}
 
 @Resolver(User)
 export class UserResolver {
-  // @UseMiddleware(isAuth)
-  @Query(() => [User])
-  async getAllUsers() {
-    const users = await User.find()
-    return users
-  }
-
   @Mutation(() => String)
-  @UseMiddleware(isLoggedIn)
   async login(
-    @Arg("email") email: string,
-    @Arg("password") password: string
+    @Arg("loginData") { email, password }: UserLoginInput
   ): Promise<string> {
     let userToken = ""
     const userMatchWithEmail = await User.find({ email })
@@ -36,7 +48,8 @@ export class UserResolver {
     const userJwtPayload = {
       id: user.id,
       email: email,
-      displayName: user.displayName
+      displayName: user.displayName,
+      role: user.role
     }
     const userHashedPassword = user.password
     const isMatch = bcrypt.compareSync(password, userHashedPassword) // true
@@ -51,11 +64,8 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  @UseMiddleware(isLoggedIn)
   async createUser(
-    @Arg("email") email: string,
-    @Arg("displayName") displayName: string,
-    @Arg("password") password: string
+    @Arg("userCreateInput") { displayName, email, password }: UserCreateInput
   ): Promise<boolean | Error> {
     const salt = bcrypt.genSaltSync(saltRounds)
     const hash = bcrypt.hashSync(password, salt)
@@ -65,11 +75,5 @@ export class UserResolver {
 
     const createPostOrError = await validAndSaveOrThrowError(newUser)
     return createPostOrError
-  }
-
-  @Mutation(() => Boolean)
-  async deleteAllUser(): Promise<boolean> {
-    await User.createQueryBuilder().delete().execute()
-    return true
   }
 }
