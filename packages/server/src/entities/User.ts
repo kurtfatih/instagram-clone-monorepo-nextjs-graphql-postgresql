@@ -1,4 +1,4 @@
-import { IsEmail, IsString } from "class-validator"
+import { IsEmail, IsString, MinLength } from "class-validator"
 import { Field, ObjectType } from "type-graphql"
 import { TypeormLoader } from "type-graphql-dataloader"
 import {
@@ -8,6 +8,11 @@ import {
   OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm"
+import {
+  getErrorMessageWithClassValidatorMessage,
+  minimumDisplayNameLength,
+  minimumPasswordLength
+} from "../constants/validationconstants"
 import { Post } from "./Post"
 
 @Entity("User")
@@ -30,9 +35,16 @@ export class User extends BaseEntity {
   @IsString()
   @Column()
   @Field()
+  @MinLength(minimumDisplayNameLength, {
+    message: getErrorMessageWithClassValidatorMessage("displayName")
+  })
   displayName: string
 
   @Column()
   @Field()
+  @IsString()
+  @MinLength(minimumPasswordLength, {
+    message: getErrorMessageWithClassValidatorMessage("password")
+  })
   password: string
 }

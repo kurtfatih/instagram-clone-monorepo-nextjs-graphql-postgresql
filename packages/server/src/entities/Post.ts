@@ -1,16 +1,18 @@
-import { IsHash, IsEmail, IsString, IsNumber } from "class-validator"
+import { IsHash, IsEmail, IsString, IsNumber, MaxLength } from "class-validator"
 import { Field, ObjectType } from "type-graphql"
 import { TypeormLoader } from "type-graphql-dataloader"
 import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
-  RelationId
+  PrimaryGeneratedColumn
 } from "typeorm"
+import {
+  getErrorMessageWithClassValidatorMessage,
+  maxDescriptionLength
+} from "../constants/validationconstants"
 import { Comments } from "./Comments"
 import { User } from "./User"
 
@@ -21,6 +23,10 @@ export class Post extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string
 
+  @IsString()
+  @MaxLength(maxDescriptionLength, {
+    message: getErrorMessageWithClassValidatorMessage("Post Description", true)
+  })
   @Column()
   @Field({ nullable: true })
   description?: string
@@ -30,14 +36,10 @@ export class Post extends BaseEntity {
   @TypeormLoader()
   user: User
 
-  // @Field()
-  // @RelationId((user: User) => user.posts) // you need to specify target relation
-  // userId: number
-
   @IsNumber()
   @Column({ default: 0 })
-  @Field({ defaultValue: 0 })
-  likes: number
+  @Field({ defaultValue: 0, nullable: true })
+  likes: number = 0
 
   @Field(() => [Comments], { nullable: true })
   @OneToMany(() => Comments, (comment) => comment.post, { cascade: true })

@@ -12,12 +12,10 @@ import { SharedContextType } from "../context/types"
 import { Post } from "../entities/Post"
 import { User } from "../entities/User"
 import { isAuth } from "../middleware/checkIsUsert"
+import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
 
 @InputType({ description: "Update Post Input That" })
 class UpdatePostInput implements Partial<Post> {
-  @Field()
-  likes: number
-
   @Field({ nullable: true })
   description?: string
 }
@@ -35,16 +33,18 @@ export class PostResolver {
   async createPost(
     @Arg("postInput") { description }: UpdatePostInput,
     @Ctx() { payload }: SharedContextType
-  ): Promise<boolean> {
+  ): Promise<true | Error> {
     const { id } = payload as { id: string; email: string; displayName: string }
     console.log("userid", id)
-    await Post.create({
+
+    const newPost = Post.create({
       description: description,
-      likes: 0,
       user: { id }
-    }).save()
+    })
+
+    const createPostOrError = await validAndSaveOrThrowError(newPost)
+    return createPostOrError
     // validateWrap(res, res.save)
-    return true
   }
 
   @Mutation(() => Boolean)

@@ -13,15 +13,14 @@ import { SharedContextType } from "../context/types"
 import { saltRounds } from "../constants/bcyrptconstant"
 import { validate } from "class-validator"
 import { isLoggedIn } from "../middleware/checkIsUsert"
+import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
 
 @Resolver(User)
 export class UserResolver {
   // @UseMiddleware(isAuth)
   @Query(() => [User])
-  async users(@Ctx() { repo }: SharedContextType) {
-    console.log("what")
-
-    const users = await repo(User).createQueryBuilder("users").getMany()
+  async getAllUsers() {
+    const users = await User.find()
     return users
   }
 
@@ -47,6 +46,7 @@ export class UserResolver {
       console.log("generatedtoken", token)
       userToken = token
     }
+
     return userToken
   }
 
@@ -56,28 +56,15 @@ export class UserResolver {
     @Arg("email") email: string,
     @Arg("displayName") displayName: string,
     @Arg("password") password: string
-  ): Promise<boolean> {
+  ): Promise<boolean | Error> {
     const salt = bcrypt.genSaltSync(saltRounds)
     const hash = bcrypt.hashSync(password, salt)
     // Store hash in your password DB.
     const newUserObj = { email, displayName, password: hash }
-    const res = User.create(newUserObj)
-    await validate(res)
-      .then(async (errors) => {
-        // errors is an array of validation errors
-        if (errors.length > 0) {
-          console.log(errors)
-          return false
-        } else {
-          try {
-            await res.save()
-          } catch (e) {
-            console.log(e)
-          }
-        }
-      })
-      .catch((e) => console.log(e))
-    return true
+    const newUser = User.create(newUserObj)
+
+    const createPostOrError = await validAndSaveOrThrowError(newUser)
+    return createPostOrError
   }
 
   @Mutation(() => Boolean)

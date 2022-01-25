@@ -1,14 +1,7 @@
-import {
-  Resolver,
-  Query,
-  Ctx,
-  Mutation,
-  Arg,
-  UseMiddleware
-} from "type-graphql"
-import { SharedContextType } from "../context/types"
+import { Resolver, Query, Mutation, Arg, UseMiddleware } from "type-graphql"
 import { Comments } from "../entities/Comments"
 import { isAuth } from "../middleware/checkIsUsert"
+import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
 
 @Resolver(Comments)
 export class CommentsResolver {
@@ -23,22 +16,26 @@ export class CommentsResolver {
   async createComment(
     @Arg("postId") postId: string,
     @Arg("text") text: string
-    // @Ctx() { payload }: SharedContextType
-  ): Promise<boolean> {
-    await Comments.create({
+  ): Promise<boolean | Error> {
+    const newComment = Comments.create({
       post: { id: postId },
       text: text
-    }).save()
-    return true
+    })
+    const createCommentOrError = validAndSaveOrThrowError(newComment)
+    return createCommentOrError
   }
 
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean)
   async deleteCommentById(
     @Arg("commentId") commentId: string
-  ): Promise<boolean> {
-    await Comments.delete({ id: commentId })
-    return true
+  ): Promise<boolean | Error> {
+    try {
+      await Comments.delete({ id: commentId })
+      return true
+    } catch {
+      throw Error("someting went wrong")
+    }
   }
 
   @Mutation(() => Boolean)
