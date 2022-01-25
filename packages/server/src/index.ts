@@ -10,6 +10,7 @@ import { UserResolver } from "./resolvers/UserResolver"
 import { IncomingMessage } from "http"
 import { PostResolver } from "./resolvers/PostResolver"
 import { ApolloServerLoaderPlugin } from "type-graphql-dataloader"
+import { CommentsResolver } from "./resolvers/CommentResolver"
 
 const main = async () => {
   console.log("main servr")
@@ -28,28 +29,12 @@ const main = async () => {
       entitiesDir: "src/entities",
       migrationsDir: "src/migration",
       subscribersDir: "src/subscriber"
-    }
+    },
+    synchronize: true
   }).then(() => console.log("db create succesfully"))
 
-  // {
-  //   type: "postgres",
-  //   host: "localhost",
-  //   port: 5432,
-  //   username: "fatihkurt",
-  //   password: "admin",
-  //   role: "admin",
-  //   database: "postgres",
-  //   entities: ["src/entities/**/*.ts"],
-  //   migrations: ["src/migration/**/*.ts"],
-  //   subscribers: ["src/subscriber/**/*.ts"],
-  //   cli: {
-  //     entitiesDir: "src/entities",
-  //     migrationsDir: "src/migration",
-  //     subscribersDir: "src/subscriber"
-  //   }
-  // }
   const schema = await buildSchema({
-    resolvers: [UserResolver, PostResolver]
+    resolvers: [UserResolver, PostResolver, CommentsResolver]
   })
   // A map of functions which return data for the schema.
 

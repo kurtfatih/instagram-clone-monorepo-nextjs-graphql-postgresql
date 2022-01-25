@@ -36,7 +36,7 @@ export class PostResolver {
     @Arg("postInput") { description }: UpdatePostInput,
     @Ctx() { payload }: SharedContextType
   ): Promise<boolean> {
-    const { id } = payload as { id: number; email: string; displayName: string }
+    const { id } = payload as { id: string; email: string; displayName: string }
     console.log("userid", id)
     await Post.create({
       description: description,
@@ -46,15 +46,10 @@ export class PostResolver {
     // validateWrap(res, res.save)
     return true
   }
+
   @Mutation(() => Boolean)
-  async deletePosts(): Promise<boolean> {
+  async deleteAllPosts(): Promise<boolean> {
     await Post.createQueryBuilder().delete().execute()
-    // await  Post.create({
-    //   description,
-    //   userId: id,
-    //   likes: 0
-    // }).save()
-    // validateWrap(res, res.save)
     return true
   }
   // @Mutation() async deletePostById(@Ctx() { repo }: SharedContextType) {

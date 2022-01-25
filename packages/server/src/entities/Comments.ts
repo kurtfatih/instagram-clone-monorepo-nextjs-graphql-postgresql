@@ -1,25 +1,32 @@
-import { IsHash, IsEmail, IsString, IsNumber } from "class-validator"
 import { Field, ObjectType } from "type-graphql"
+import { TypeormLoader } from "type-graphql-dataloader"
 import {
   BaseEntity,
   Column,
   Entity,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn
 } from "typeorm"
 import { Post } from "./Post"
-import { User } from "./User"
 
 @Entity("Comments")
 @ObjectType()
 export class Comments extends BaseEntity {
+  @PrimaryGeneratedColumn("uuid")
   @Field()
-  @PrimaryGeneratedColumn()
-  id!: number
+  id: string
+
+  @Column()
+  @Field(() => String)
+  text: string
+
+  @Column({ default: 0 })
+  @Field({ defaultValue: 0, nullable: true })
+  likes: number
 
   @Field(() => Post)
-  @ManyToMany(() => Post, (post) => post.comments, { primary: true })
+  @ManyToOne(() => Post, (post) => post.comments, { primary: true })
+  @TypeormLoader()
   post: Post
 }
 //has relationshit with user as many to one

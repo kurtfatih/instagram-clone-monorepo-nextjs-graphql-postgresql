@@ -14,8 +14,8 @@ import { Post } from "./Post"
 @ObjectType()
 export class User extends BaseEntity {
   @Field()
-  @PrimaryGeneratedColumn()
-  id!: number
+  @PrimaryGeneratedColumn("uuid")
+  id: string
 
   @OneToMany(() => Post, (post) => post.user, { cascade: true })
   @Field(() => [Post])

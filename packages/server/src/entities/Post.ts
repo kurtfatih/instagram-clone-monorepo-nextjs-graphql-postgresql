@@ -18,8 +18,8 @@ import { User } from "./User"
 @ObjectType()
 export class Post extends BaseEntity {
   @Field()
-  @PrimaryGeneratedColumn()
-  id!: number
+  @PrimaryGeneratedColumn("uuid")
+  id: string
 
   @Column()
   @Field({ nullable: true })
@@ -40,6 +40,7 @@ export class Post extends BaseEntity {
   likes: number
 
   @Field(() => [Comments], { nullable: true })
-  @OneToMany(() => Comments, (comment) => comment.post)
+  @OneToMany(() => Comments, (comment) => comment.post, { cascade: true })
+  @TypeormLoader()
   comments: Comments[]
 }

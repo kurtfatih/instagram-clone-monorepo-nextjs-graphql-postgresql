@@ -12,7 +12,7 @@ import jwt from "jsonwebtoken"
 import { SharedContextType } from "../context/types"
 import { saltRounds } from "../constants/bcyrptconstant"
 import { validate } from "class-validator"
-import { isAuth, isLoggedIn } from "../middleware/checkIsUsert"
+import { isLoggedIn } from "../middleware/checkIsUsert"
 
 @Resolver(User)
 export class UserResolver {
@@ -77,6 +77,12 @@ export class UserResolver {
         }
       })
       .catch((e) => console.log(e))
+    return true
+  }
+
+  @Mutation(() => Boolean)
+  async deleteAllUser(): Promise<boolean> {
+    await User.createQueryBuilder().delete().execute()
     return true
   }
 }
