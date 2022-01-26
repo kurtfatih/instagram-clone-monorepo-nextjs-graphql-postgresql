@@ -1,3 +1,5 @@
+import { createWriteStream } from "fs"
+import { FileUpload, GraphQLUpload } from "graphql-upload"
 import {
   Resolver,
   Query,
@@ -98,5 +100,19 @@ export class PostResolver {
     } catch {
       throw new Error("Someting went wrong")
     }
+  }
+
+  @Mutation(() => Boolean)
+  async addImageToPost(
+    @Arg("picture", () => GraphQLUpload)
+    { createReadStream, filename }: FileUpload
+  ): Promise<boolean> {
+    return new Promise(async (resolve, reject) =>
+      createReadStream()
+        .pipe(createWriteStream(__dirname + `/../../../images/${filename}`))
+        .on("finish", () => resolve(true))
+        .on("close", () => resolve(true))
+        .on("error", () => reject(false))
+    )
   }
 }
