@@ -7,12 +7,16 @@ import {
   Mutation,
   UseMiddleware,
   InputType,
-  FieldResolver
+  FieldResolver,
+  Root,
+  Subscription,
+  PubSub,
+  PubSubEngine
 } from "type-graphql"
 import { RoleType, User } from "../entities/User"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import { SharedContextType } from "../context/types"
+import { SharedContextType, userJWTPayloadType } from "../context/types"
 import { saltRounds } from "../constants/bcyrptconstant"
 import { validate } from "class-validator"
 import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
@@ -81,12 +85,13 @@ export class UserResolver {
   }
   @Mutation(() => String)
   async login(
-    @Arg("loginData") { email, password }: UserLoginInput
+    @Arg("loginData") { email, password }: UserLoginInput,
+    @PubSub() pubsub: PubSubEngine
   ): Promise<string> {
     let userToken = ""
     const userMatchWithEmail = await User.find({ email })
     const user = userMatchWithEmail[0]
-    const userJwtPayload = {
+    const userJwtPayload: userJWTPayloadType = {
       id: user.id,
       email: email,
       displayName: user.displayName,
@@ -101,9 +106,20 @@ export class UserResolver {
       userToken = token
     }
 
+    await pubsub.publish("USERLOGIN", userJwtPayload)
     return userToken
   }
 
+  @Subscription(() => User, {
+    topics: "USERLOGIN"
+  })
+  userLoginSubscribe(
+    @Root() userJwtPayload: userJWTPayloadType
+    // @Args() args: Post
+  ): userJWTPayloadType {
+    console.log("that user loggedin")
+    return userJwtPayload
+  }
   @Mutation(() => Boolean)
   async createUser(
     @Arg("userCreateInput") { displayName, email, password }: UserCreateInput

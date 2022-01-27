@@ -8,10 +8,15 @@ import {
   InputType,
   Field,
   Arg,
-  UseMiddleware
+  UseMiddleware,
+  Subscription,
+  Root,
+  Args,
+  PubSubEngine,
+  PubSub
 } from "type-graphql"
 import { SharedContextType } from "../context/types"
-import { Post } from "../entities/Post"
+import { Post, PostNotification } from "../entities/Post"
 import { User } from "../entities/User"
 import { isAuth } from "../middleware/checkIsUsert"
 import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
@@ -22,13 +27,18 @@ class UpdatePostInput implements Partial<Post> {
   description: string
 }
 
+interface NOTIFICATIONI {
+  post: Post
+  date: Date
+}
 @Resolver(Post)
 export class PostResolver {
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean)
   async createPost(
     @Arg("postInput") { description }: UpdatePostInput,
-    @Ctx() { userJwtPayload }: SharedContextType
+    @Ctx() { userJwtPayload }: SharedContextType,
+    @PubSub() pubsub: PubSubEngine
   ): Promise<true | Error> {
     if (!userJwtPayload) throw new Error("User payload couldn find")
     const { id } = userJwtPayload
@@ -39,8 +49,25 @@ export class PostResolver {
     })
 
     const createPostOrError = await validAndSaveOrThrowError(newPost)
+
+    const payload: Post = newPost
+    await pubsub.publish("NOTIFICATIONS", payload)
     return createPostOrError
     // validateWrap(res, res.save)
+  }
+  // post created listener
+  @Subscription(() => PostNotification, {
+    topics: "NOTIFICATIONS"
+  })
+  newPostCreatedNotification(
+    @Root() postPayload: Post
+    // @Args() args: Post
+  ): PostNotification {
+    console.log("thats triggered")
+    return {
+      post: postPayload,
+      date: new Date()
+    }
   }
 
   @UseMiddleware(isAuth)
@@ -87,7 +114,6 @@ export class PostResolver {
       throw new Error("Someting went wrong")
     }
   }
-
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean || Error)
   async dislikePost(

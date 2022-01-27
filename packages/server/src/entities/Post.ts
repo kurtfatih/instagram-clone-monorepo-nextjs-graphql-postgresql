@@ -57,3 +57,12 @@ export class Post extends BaseEntity {
   @TypeormLoader()
   comments: Comments[]
 }
+
+@ObjectType()
+export class PostNotification {
+  @Field()
+  post: Post
+
+  @Field()
+  date: Date
+}

@@ -1,5 +1,3 @@
-import { ApolloServer } from "apollo-server-express"
-
 import "dotenv/config"
 import "reflect-metadata"
 import { startApolloExpressServer } from "./apollo/apolloServer"

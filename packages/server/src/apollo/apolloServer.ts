@@ -19,6 +19,9 @@ import { UserResolver } from "../resolvers/UserResolver"
 export const startApolloExpressServer = async () => {
   // express configuration
   const app = express()
+  app.get("/", (_, res) => {
+    res.redirect("/graphql")
+  })
   const httpServer = http.createServer(app)
   app.use(cors())
   app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }))
