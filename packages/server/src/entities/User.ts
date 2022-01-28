@@ -14,7 +14,7 @@ import {
 } from "typeorm"
 import { saltRounds } from "../constants/bcyrptconstant"
 import {
-  getErrorMessageWithClassValidatorMessage,
+  mixedMessageWithClassValidatorForLengthError,
   minimumDisplayNameLength,
   minimumPasswordLength
 } from "../constants/validationconstants"
@@ -50,7 +50,9 @@ export class User extends BaseEntity {
   @Column()
   @Field()
   @MinLength(minimumDisplayNameLength, {
-    message: getErrorMessageWithClassValidatorMessage("displayName")
+    message: mixedMessageWithClassValidatorForLengthError({
+      property: "displayName"
+    })
   })
   displayName: string
 
@@ -64,7 +66,9 @@ export class User extends BaseEntity {
   @Field()
   @IsString()
   @MinLength(minimumPasswordLength, {
-    message: getErrorMessageWithClassValidatorMessage("password")
+    message: mixedMessageWithClassValidatorForLengthError({
+      property: "password"
+    })
   })
   password: string
   @BeforeInsert()

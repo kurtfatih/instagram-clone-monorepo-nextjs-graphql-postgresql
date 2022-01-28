@@ -2,7 +2,6 @@ import { createWriteStream } from "fs"
 import { FileUpload, GraphQLUpload } from "graphql-upload"
 import {
   Resolver,
-  Query,
   Ctx,
   Mutation,
   InputType,
@@ -11,15 +10,13 @@ import {
   UseMiddleware,
   Subscription,
   Root,
-  Args,
   PubSubEngine,
   PubSub
 } from "type-graphql"
 import { SharedContextType } from "../context/types"
 import { Post, PostNotification } from "../entities/Post"
-import { User } from "../entities/User"
-import { isAuth } from "../middleware/checkIsUsert"
-import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
+import { isAuth } from "../middleware/usermiddleware"
+import { validateAndSaveOrThrowError } from "../utils/validateAndSaveOrThrowError"
 
 @InputType({ description: "Update Post Input That" })
 class UpdatePostInput implements Partial<Post> {
@@ -27,12 +24,9 @@ class UpdatePostInput implements Partial<Post> {
   description: string
 }
 
-interface NOTIFICATIONI {
-  post: Post
-  date: Date
-}
 @Resolver(Post)
 export class PostResolver {
+  // post resolvers
   @UseMiddleware(isAuth)
   @Mutation(() => Boolean)
   async createPost(
@@ -48,26 +42,25 @@ export class PostResolver {
       user: { id }
     })
 
-    const createPostOrError = await validAndSaveOrThrowError(newPost)
+    const createPostOrError = await validateAndSaveOrThrowError(newPost)
 
     const payload: Post = newPost
     await pubsub.publish("NOTIFICATIONS", payload)
     return createPostOrError
     // validateWrap(res, res.save)
   }
-  // post created listener
-  @Subscription(() => PostNotification, {
-    topics: "NOTIFICATIONS"
-  })
-  newPostCreatedNotification(
-    @Root() postPayload: Post
-    // @Args() args: Post
-  ): PostNotification {
-    console.log("thats triggered")
-    return {
-      post: postPayload,
-      date: new Date()
-    }
+
+  @UseMiddleware(isAuth)
+  @Mutation(() => Post || Error)
+  async getPostById(
+    @Arg("post_id") postId: string,
+    @Ctx() { userJwtPayload }: SharedContextType
+  ): Promise<Post | Error> {
+    const post = await Post.findOne(postId, {
+      where: { id: postId, user: userJwtPayload?.id }
+    })
+    if (!post) throw new Error("Someting went wrong")
+    return post
   }
 
   @UseMiddleware(isAuth)
@@ -76,12 +69,12 @@ export class PostResolver {
     @Arg("post_id") postId: string,
     @Ctx() { userJwtPayload }: SharedContextType
   ): Promise<boolean | Error> {
-    const userPost = await User.findOneOrFail(userJwtPayload?.id, {
-      relations: ["posts"]
+    const post = await Post.findOne(postId, {
+      where: { id: postId, user: userJwtPayload?.id }
     })
-    const post = userPost.posts.find(({ id }) => id === postId)
-    if (!post) throw new Error("Something went wrong")
+    if (!post) throw new Error("Someting went wrong")
     await post.remove()
+
     return true
   }
 
@@ -92,12 +85,14 @@ export class PostResolver {
     @Arg("description") description: string,
     @Ctx() { userJwtPayload }: SharedContextType
   ): Promise<boolean | Error> {
-    const userPost = await User.findOneOrFail(userJwtPayload?.id, {
-      relations: ["posts"]
+    const post = await Post.findOne(postId, {
+      where: { id: postId, user: userJwtPayload?.id }
     })
-    const post = userPost.posts.find(({ id }) => id === postId)
+    console.log(post)
     if (!post) throw new Error("Someting went wrong")
-    await Post.update({ id: post.id }, { description })
+    post.description = description
+    await post.save()
+    // await Post.update({ id: post.id }, { description })
     return true
   }
 
@@ -140,5 +135,21 @@ export class PostResolver {
         .on("close", () => resolve(true))
         .on("error", () => reject(false))
     )
+  }
+
+  // post subscriptions
+  // -- - -- -- - -- - - - -- -
+  // post created listener
+  @Subscription(() => PostNotification, {
+    topics: "NOTIFICATIONS"
+  })
+  newPostCreatedNotification(
+    @Root() postPayload: Post
+    // @Args() args: Post
+  ): PostNotification {
+    return {
+      post: postPayload,
+      date: new Date()
+    }
   }
 }

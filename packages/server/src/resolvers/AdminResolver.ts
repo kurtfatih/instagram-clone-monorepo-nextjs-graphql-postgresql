@@ -2,7 +2,7 @@ import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql"
 import { Comments } from "../entities/Comments"
 import { Post } from "../entities/Post"
 import { RoleType, User } from "../entities/User"
-import { isAdmin, isAuth } from "../middleware/checkIsUsert"
+import { isAdmin, isAuth } from "../middleware/usermiddleware"
 
 @Resolver()
 export class AdminResolver {

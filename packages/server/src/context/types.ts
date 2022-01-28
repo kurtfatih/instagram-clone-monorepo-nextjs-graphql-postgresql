@@ -1,9 +1,6 @@
-import { ExpressContext } from "apollo-server-express"
 import express from "express"
-import { IncomingHttpHeaders, IncomingMessage } from "http"
-import { JwtPayload } from "jsonwebtoken"
-import { getRepository, ConnectionManager, getConnection } from "typeorm"
-import { RoleType, User } from "../entities/User"
+import { getRepository, getConnection } from "typeorm"
+import { RoleType } from "../entities/User"
 
 export type userJWTPayloadType = {
   id: string
@@ -17,5 +14,5 @@ export type SharedContextType = {
   repo: typeof getRepository
   req: typeof express.request
   res: typeof express.response
-  userJwtPayload: userJWTPayloadType | null
+  userJwtPayload: userJWTPayloadType | undefined
 }

@@ -1,16 +1,8 @@
-import {
-  Resolver,
-  Query,
-  Mutation,
-  Arg,
-  UseMiddleware,
-  Ctx
-} from "type-graphql"
-import { SharedContextType } from "../context/types"
+import { Resolver, Mutation, Arg, UseMiddleware } from "type-graphql"
 import { Comments } from "../entities/Comments"
 import { Post } from "../entities/Post"
-import { isAuth } from "../middleware/checkIsUsert"
-import { validAndSaveOrThrowError } from "../middleware/validAndSaveOrThrowError"
+import { isAuth } from "../middleware/usermiddleware"
+import { validateAndSaveOrThrowError } from "../utils/validateAndSaveOrThrowError"
 
 @Resolver(Comments)
 export class CommentsResolver {
@@ -24,7 +16,7 @@ export class CommentsResolver {
       post: { id: postId },
       text: text
     })
-    const createCommentOrError = validAndSaveOrThrowError(newComment)
+    const createCommentOrError = validateAndSaveOrThrowError(newComment)
     return createCommentOrError
   }
 

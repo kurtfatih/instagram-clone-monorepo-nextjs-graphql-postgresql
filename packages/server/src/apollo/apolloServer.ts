@@ -60,7 +60,7 @@ export const startApolloExpressServer = async () => {
         req,
         res,
         repo: getRepository,
-        userJwtPayload: null,
+        userJwtPayload: undefined,
         connection: getConnection
       }
     }

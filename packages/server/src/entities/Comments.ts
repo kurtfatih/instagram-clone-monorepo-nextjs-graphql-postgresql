@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm"
 import {
-  getErrorMessageWithClassValidatorMessage,
+  mixedMessageWithClassValidatorForLengthError,
   maxCommentLength
 } from "../constants/validationconstants"
 import { Post } from "./Post"
@@ -24,7 +24,10 @@ export class Comments extends BaseEntity {
   @Column()
   @IsString()
   @MaxLength(maxCommentLength, {
-    message: getErrorMessageWithClassValidatorMessage("caption", true)
+    message: mixedMessageWithClassValidatorForLengthError({
+      property: "caption",
+      max: true
+    })
   })
   @Field(() => String)
   text: string

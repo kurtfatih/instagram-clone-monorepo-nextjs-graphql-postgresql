@@ -1,13 +1,6 @@
 import { ObjectType, Field } from "type-graphql"
 import { TypeormLoader } from "type-graphql-dataloader"
-import {
-  Entity,
-  BaseEntity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToOne,
-  Column
-} from "typeorm"
+import { Entity, BaseEntity, PrimaryGeneratedColumn, OneToOne } from "typeorm"
 import { Post } from "./Post"
 
 @Entity("Image")

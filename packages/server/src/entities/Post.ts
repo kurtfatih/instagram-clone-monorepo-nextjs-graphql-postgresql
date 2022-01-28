@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm"
 import {
-  getErrorMessageWithClassValidatorMessage,
+  mixedMessageWithClassValidatorForLengthError,
   maxDescriptionLength
 } from "../constants/validationconstants"
 import { Comments } from "./Comments"
@@ -27,7 +27,10 @@ export class Post extends BaseEntity {
 
   @IsString()
   @MaxLength(maxDescriptionLength, {
-    message: getErrorMessageWithClassValidatorMessage("Post Description", true)
+    message: mixedMessageWithClassValidatorForLengthError({
+      property: "Post Description",
+      max: true
+    })
   })
   @Column()
   @Field({ nullable: true })

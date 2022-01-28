@@ -1,7 +1,7 @@
 import { validate } from "class-validator"
 import { SaveOptions } from "typeorm"
 
-export const validAndSaveOrThrowError = async <
+export const validateAndSaveOrThrowError = async <
   T extends { save: (options?: SaveOptions | undefined) => Promise<T> }
 >(
   model: T
