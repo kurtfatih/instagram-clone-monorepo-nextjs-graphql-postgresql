@@ -1,8 +1,10 @@
 import { IsEmail, IsString, MinLength } from "class-validator"
+import bcrypt from "bcrypt"
 import { Field, ObjectType } from "type-graphql"
 import { TypeormLoader } from "type-graphql-dataloader"
 import {
   BaseEntity,
+  BeforeInsert,
   Column,
   Entity,
   JoinTable,
@@ -10,6 +12,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn
 } from "typeorm"
+import { saltRounds } from "../constants/bcyrptconstant"
 import {
   getErrorMessageWithClassValidatorMessage,
   minimumDisplayNameLength,
@@ -64,4 +67,8 @@ export class User extends BaseEntity {
     message: getErrorMessageWithClassValidatorMessage("password")
   })
   password: string
+  @BeforeInsert()
+  async hashPasswordBeforeInsert() {
+    this.password = await bcrypt.hash(this.password, saltRounds)
+  }
 }

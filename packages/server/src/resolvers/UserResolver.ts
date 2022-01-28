@@ -124,10 +124,10 @@ export class UserResolver {
   async createUser(
     @Arg("userCreateInput") { displayName, email, password }: UserCreateInput
   ): Promise<boolean | Error> {
-    const salt = bcrypt.genSaltSync(saltRounds)
-    const hash = bcrypt.hashSync(password, salt)
+    // const salt = bcrypt.genSaltSync(saltRounds)
+    // const hash = bcrypt.hashSync(password, salt)
     // Store hash in your password DB.
-    const newUserObj = { email, displayName, password: hash }
+    const newUserObj = { email, displayName, password }
     const newUser = User.create(newUserObj)
 
     const createPostOrError = await validAndSaveOrThrowError(newUser)
