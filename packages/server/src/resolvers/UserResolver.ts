@@ -61,7 +61,7 @@ export class UserResolver {
   }
 
   @Mutation(() => String)
-  async login(
+  async signIn(
     @Arg("emailAndPassword") { email, password }: UserLoginInput,
     @PubSub() pubsub: PubSubEngine
   ): Promise<string> {
@@ -93,7 +93,7 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  async createUser(
+  async signUp(
     @Arg("createUserInput") { displayName, email, password }: UserCreateInput
   ): Promise<boolean | Error> {
     // const salt = bcrypt.genSaltSync(saltRounds)
