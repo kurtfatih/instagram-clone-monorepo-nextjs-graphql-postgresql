@@ -22,7 +22,9 @@ import bcrypt from "bcrypt"
 export class UserResolver {
   @UseMiddleware(isAuth)
   @Query(() => User, { nullable: true })
-  async getUserById(@Ctx() { userJwtPayload }: SharedContextType) {
+  async user(
+    @Ctx() { userJwtPayload }: SharedContextType
+  ): Promise<User | undefined> {
     const user = await User.findOne(userJwtPayload?.id)
     return user
   }

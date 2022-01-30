@@ -11,7 +11,8 @@ import {
   Subscription,
   Root,
   PubSubEngine,
-  PubSub
+  PubSub,
+  Query
 } from "type-graphql"
 import { SharedContextType } from "../context/types"
 import { Post, PostNotification } from "../entities/Post"
@@ -51,15 +52,14 @@ export class PostResolver {
   }
 
   @UseMiddleware(isAuth)
-  @Mutation(() => Post || Error)
-  async getPostById(
+  @Query(() => Post, { nullable: true })
+  async post(
     @Arg("post_id") postId: string,
     @Ctx() { userJwtPayload }: SharedContextType
-  ): Promise<Post | Error> {
+  ): Promise<Post | undefined> {
     const post = await Post.findOne(postId, {
       where: { id: postId, user: userJwtPayload?.id }
     })
-    if (!post) throw new Error("Someting went wrong")
     return post
   }
 
