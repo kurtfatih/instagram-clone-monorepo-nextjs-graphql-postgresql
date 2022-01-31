@@ -1,0 +1,17 @@
+query Post($postId: String!) {
+  post(post_id: $postId) {
+    id
+    description
+  }
+}
+query User {
+  user {
+    id
+    displayName
+  }
+}
+query UserFriends {
+  findFriends {
+    id
+  }
+}

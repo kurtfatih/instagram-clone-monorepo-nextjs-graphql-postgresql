@@ -1,0 +1,24 @@
+mutation SignUp($createUserInput: UserCreateInput!) {
+  signUp(createUserInput: $createUserInput)
+}
+mutation SignIn($emailAndPassword: UserLoginInput!) {
+  signIn(emailAndPassword: $emailAndPassword)
+}
+mutation CreatePost($postInput: UpdatePostInput!) {
+  createPost(postInput: $postInput)
+}
+mutation DeletePostById($postId: String!) {
+  deletePostById(post_id: $postId)
+}
+mutation UpdatePostDescriptionById($description: String!, $postId: String!) {
+  updatePostDescriptionById(description: $description, post_id: $postId)
+}
+mutation CreateComment($text: String!, $postId: String!) {
+  createComment(text: $text, postId: $postId)
+}
+mutation DeleteCommentByPostAndCommentId(
+  $commentId: String!
+  $postId: String!
+) {
+  deleteCommentByPostAndCommentId(commentId: $commentId, postId: $postId)
+}

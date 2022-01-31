@@ -1,0 +1,12 @@
+subscription NewPostCreatedNotification {
+  newPostCreatedNotification {
+    post {
+      id
+    }
+  }
+}
+subscription UserLoginSubscribe {
+  userLoginSubscribe {
+    id
+  }
+}
