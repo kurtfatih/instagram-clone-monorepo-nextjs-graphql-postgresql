@@ -1,3 +1,4 @@
+import { validate } from "class-validator"
 import { createWriteStream } from "fs"
 import { FileUpload, GraphQLUpload } from "graphql-upload"
 import {
@@ -10,14 +11,18 @@ import {
   UseMiddleware,
   Subscription,
   Root,
-  PubSubEngine,
-  PubSub,
+  // PubSubEngine,
+  // PubSub,
   Query
 } from "type-graphql"
 import { SharedContextType } from "../context/types"
 import { Post, PostNotification } from "../entities/Post"
 import { isAuth } from "../middleware/usermiddleware"
-import { validateAndSaveOrThrowError } from "../utils/validateAndSaveOrThrowError"
+import {
+  getValidationErrorMessage,
+  isThereValidationError,
+  // validateAndSaveOrThrowError
+} from "../utils/validateAndSaveOrThrowError"
 
 @InputType({ description: "Update Post Input That" })
 class UpdatePostInput implements Partial<Post> {
@@ -29,12 +34,11 @@ class UpdatePostInput implements Partial<Post> {
 export class PostResolver {
   // post resolvers
   @UseMiddleware(isAuth)
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { nullable: true })
   async createPost(
     @Arg("postInput") { description }: UpdatePostInput,
-    @Ctx() { userJwtPayload }: SharedContextType,
-    @PubSub() pubsub: PubSubEngine
-  ): Promise<true | Error> {
+    @Ctx() { userJwtPayload }: SharedContextType
+  ): Promise<boolean | Error> {
     if (!userJwtPayload) throw new Error("User payload couldn find")
     const { id } = userJwtPayload
 
@@ -43,12 +47,19 @@ export class PostResolver {
       user: { id }
     })
 
-    const createPostOrError = await validateAndSaveOrThrowError(newPost)
+    // const createPostOrError = await validateAndSaveOrThrowError(newPost)
 
-    const payload: Post = newPost
-    await pubsub.publish("NOTIFICATIONS", payload)
-    return createPostOrError
-    // validateWrap(res, res.save)
+    const validateCheck = await validate(newPost)
+    const isValidateErrorExist = isThereValidationError(validateCheck)
+    if (isValidateErrorExist) {
+      const errMsg = getValidationErrorMessage(validateCheck)
+      return errMsg
+    }
+
+    // const payload: Post = newPost
+    // await pubsub.publish("NOTIFICATIONS", payload)
+
+    return true
   }
 
   @UseMiddleware(isAuth)

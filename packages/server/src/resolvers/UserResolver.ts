@@ -5,18 +5,25 @@ import {
   UseMiddleware,
   Arg,
   Mutation,
-  PubSub,
-  PubSubEngine,
+  // PubSub,
+  // PubSubEngine,
   Root,
   Subscription
 } from "type-graphql"
 import { User } from "../entities/User"
 import { SharedContextType, userJWTPayloadType } from "../context/types"
 import { isAuth } from "../middleware/usermiddleware"
-import { validateAndSaveOrThrowError } from "../utils/validateAndSaveOrThrowError"
+import {
+  // getValidationError,
+  getValidationErrorMessage,
+  isThereValidationError
+  // validateAndSaveOrThrowError
+} from "../utils/validateAndSaveOrThrowError"
 import { UserLoginInput, UserCreateInput } from "./userLoginInputType"
-import jwt from "jsonwebtoken"
+// import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import { generateAccessToken } from "../utils/generateJwtToken"
+import { validate } from "class-validator"
 
 @Resolver(User)
 export class UserResolver {
@@ -62,48 +69,46 @@ export class UserResolver {
 
   @Mutation(() => String)
   async signIn(
-    @Arg("emailAndPassword") { email, password }: UserLoginInput,
-    @PubSub() pubsub: PubSubEngine
-  ): Promise<string> {
-    let userToken = ""
-
-    const userMatchWithEmail = await User.findOne({ email })
-    const user = userMatchWithEmail
-
-    if (!user) return userToken
-
-    const userJwtPayload: userJWTPayloadType = {
-      id: user.id,
-      email: email,
-      displayName: user.displayName,
-      role: user.role
+    @Arg("emailAndPassword") { email, password }: UserLoginInput
+  ): Promise<string | undefined> {
+    try {
+      //user find by email
+      const userFindByEmail = await User.findOneOrFail({ email })
+      const user = userFindByEmail
+      // create jwt payload instance
+      const userJwtPayload: userJWTPayloadType = {
+        id: user.id,
+        email: email,
+        displayName: user.displayName,
+        role: user.role
+      }
+      const userHashedPassword = user.password
+      // check if the user hashed password and input matched
+      const isMatch = await bcrypt.compare(password, userHashedPassword) // true
+      if (isMatch) {
+        const generatedToken = generateAccessToken(userJwtPayload)
+        return generatedToken
+      }
+    } catch (e: any) {
+      throw Error(e)
     }
-
-    const userHashedPassword = user.password
-
-    const isMatch = await bcrypt.compare(password, userHashedPassword) // true
-    if (isMatch) {
-      if (!process.env.JWT_SECRET_KEY) return ""
-      const token = jwt.sign(userJwtPayload, process.env.JWT_SECRET_KEY)
-      console.log("generatedtoken", token)
-      userToken = token
-    }
-    await pubsub.publish("USERLOGIN", userJwtPayload)
-    return userToken
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { nullable: true })
   async signUp(
     @Arg("createUserInput") { displayName, email, password }: UserCreateInput
   ): Promise<boolean | Error> {
-    // const salt = bcrypt.genSaltSync(saltRounds)
-    // const hash = bcrypt.hashSync(password, salt)
-    // Store hash in your password DB.
     const newUserObj = { email, displayName, password }
     const newUser = User.create(newUserObj)
-
-    const createPostOrError = await validateAndSaveOrThrowError(newUser)
-    return createPostOrError
+    const errors = await validate(newUser)
+    const isValidErrorExist = isThereValidationError(errors)
+    if (isValidErrorExist) {
+      const validationErrMsg = getValidationErrorMessage(errors)
+      return validationErrMsg
+    } else {
+      newUser.save()
+      return true
+    }
   }
 
   @Subscription(() => User, {

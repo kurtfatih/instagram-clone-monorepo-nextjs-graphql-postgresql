@@ -10,7 +10,7 @@ const isAuth: MiddlewareFn<SharedContextType> = ({ context }, next) => {
     throw new Error("Not authenticated")
   }
   if (!process.env.JWT_SECRET_KEY) {
-    throw new Error("Not secret key ")
+    throw new Error("Not secret key defined by Admin")
   }
   const token = authorization.split(" ")[1]
 

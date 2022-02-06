@@ -1,12 +1,16 @@
 import "../styles/globals.css"
 import { ChakraProvider, extendTheme } from "@chakra-ui/react"
 import type { AppProps } from "next/app"
+import { ApolloProvider } from "@apollo/client"
+import client from "../apollo/apollo"
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ChakraProvider theme={theme}>
-      <Component {...pageProps} />
-    </ChakraProvider>
+    <ApolloProvider client={client}>
+      <ChakraProvider theme={theme}>
+        <Component {...pageProps} />
+      </ChakraProvider>
+    </ApolloProvider>
   )
 }
 

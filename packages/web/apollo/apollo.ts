@@ -14,4 +14,5 @@ function createApolloClient() {
     cache: new InMemoryCache()
   })
 }
-export { createApolloClient }
+const client = createApolloClient()
+export default client

@@ -1,8 +1,12 @@
+import { validate } from "class-validator"
 import { Resolver, Mutation, Arg, UseMiddleware } from "type-graphql"
 import { Comments } from "../entities/Comments"
 import { Post } from "../entities/Post"
 import { isAuth } from "../middleware/usermiddleware"
-import { validateAndSaveOrThrowError } from "../utils/validateAndSaveOrThrowError"
+import {
+  getValidationErrorMessage,
+  isThereValidationError
+} from "../utils/validateAndSaveOrThrowError"
 
 @Resolver(Comments)
 export class CommentsResolver {
@@ -16,8 +20,13 @@ export class CommentsResolver {
       post: { id: postId },
       text: text
     })
-    const createCommentOrError = validateAndSaveOrThrowError(newComment)
-    return createCommentOrError
+    const validateCheck = await validate(newComment)
+    const isValidateErrorExist = isThereValidationError(validateCheck)
+    if (isValidateErrorExist) {
+      const errMsg = getValidationErrorMessage(validateCheck)
+      return errMsg
+    }
+    return true
   }
 
   @UseMiddleware(isAuth)
@@ -26,11 +35,11 @@ export class CommentsResolver {
     @Arg("postId") postId: string,
     @Arg("commentId") commentId: string
   ): Promise<boolean | Error> {
-    const post = await Post.findOneOrFail(postId, {
+    const post = await Post.findOne(postId, {
       relations: ["comments"]
     })
-    const comment = post.comments.find(({ id }) => id === commentId)
-    if (!comment) throw new Error("Something went wrong")
+    const comment = post?.comments.find(({ id }) => id === commentId)
+    if (!comment) throw new Error("Comment couldn found")
     await comment.remove()
     return true
   }
@@ -42,11 +51,11 @@ export class CommentsResolver {
     @Arg("text") text: string,
     @Arg("postId") postId: string
   ): Promise<boolean | Error> {
-    const post = await Post.findOneOrFail(postId, {
+    const post = await Post.findOne(postId, {
       relations: ["comments"]
     })
-    const comment = post.comments.find(({ id }) => id === commentId)
-    if (!comment) throw new Error("Something went wrong")
+    const comment = post?.comments.find(({ id }) => id === commentId)
+    if (!comment) throw new Error("Comment not found")
 
     await Comments.update({ id: commentId }, { text })
     return true
