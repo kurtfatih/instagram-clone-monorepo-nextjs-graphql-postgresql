@@ -73,6 +73,7 @@ export class UserResolver {
   ): Promise<string | undefined> {
     try {
       //user find by email
+      console.log("ı am here bitch")
       const userFindByEmail = await User.findOneOrFail({ email })
       const user = userFindByEmail
       // create jwt payload instance
@@ -90,7 +91,7 @@ export class UserResolver {
         return generatedToken
       }
     } catch (e: any) {
-      throw Error(e)
+      throw Error("User not found by email")
     }
   }
 
@@ -98,16 +99,23 @@ export class UserResolver {
   async signUp(
     @Arg("createUserInput") { displayName, email, password }: UserCreateInput
   ): Promise<boolean | Error> {
-    const newUserObj = { email, displayName, password }
-    const newUser = User.create(newUserObj)
-    const errors = await validate(newUser)
-    const isValidErrorExist = isThereValidationError(errors)
-    if (isValidErrorExist) {
-      const validationErrMsg = getValidationErrorMessage(errors)
-      return validationErrMsg
-    } else {
-      newUser.save()
+    try {
+      const newUserObj = { email, displayName, password }
+      const newUser = User.create(newUserObj)
+      const errors = await validate(newUser)
+      const isValidErrorExist = isThereValidationError(errors)
+      if (isValidErrorExist) {
+        const validationErrMsg = getValidationErrorMessage(errors)
+        return validationErrMsg
+      } else {
+        await newUser.save()
+      }
       return true
+    } catch (e: any) {
+      if (e.code === "23505") {
+        return new Error(`${email} already exist please try another email.`)
+      }
+      return new Error(e)
     }
   }
 
