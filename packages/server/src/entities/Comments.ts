@@ -8,10 +8,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn
 } from "typeorm"
-import {
-  mixedMessageWithClassValidatorForLengthError,
-  maxCommentLength
-} from "../constants/validationconstants"
+import { mixedMessageWithClassValidatorForLengthError } from "../constants/validationconstants"
+import { maxCommentLength } from "instagram-clone-shared"
 import { Post } from "./Post"
 
 @Entity("Comments")

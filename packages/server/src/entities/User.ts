@@ -13,12 +13,12 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm"
 import { saltRounds } from "../constants/bcyrptconstant"
+import { mixedMessageWithClassValidatorForLengthError } from "../constants/validationconstants"
+import { Post } from "./Post"
 import {
-  mixedMessageWithClassValidatorForLengthError,
   minimumDisplayNameLength,
   minimumPasswordLength
-} from "../constants/validationconstants"
-import { Post } from "./Post"
+} from "instagram-clone-shared"
 
 export type RoleType = "ADMIN" | "MODERATOR" | "USER"
 

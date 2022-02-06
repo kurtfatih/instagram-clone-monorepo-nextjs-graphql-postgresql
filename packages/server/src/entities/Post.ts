@@ -10,10 +10,8 @@ import {
   OneToOne,
   PrimaryGeneratedColumn
 } from "typeorm"
-import {
-  mixedMessageWithClassValidatorForLengthError,
-  maxDescriptionLength
-} from "../constants/validationconstants"
+import { mixedMessageWithClassValidatorForLengthError } from "../constants/validationconstants"
+import { maxDescriptionLength } from "instagram-clone-shared"
 import { Comments } from "./Comments"
 import { Image } from "./Image"
 import { User } from "./User"
