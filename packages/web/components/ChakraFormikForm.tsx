@@ -1,4 +1,10 @@
-import { Button, FormControl, FormErrorMessage, Input } from "@chakra-ui/react"
+import {
+  Button,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input
+} from "@chakra-ui/react"
 import { FormikHelpers, useFormik } from "formik"
 import React from "react"
 
@@ -25,18 +31,24 @@ const ChakraFormikForm: React.FC<ChakraFormikFormPropsI> = ({
     validationSchema
   })
   return (
-    <FormControl
-      as="form"
-      isInvalid={!formik.isValid}
-      flexDirection={"column"}
-      justifyContent={"space-between"}
-      height="50%"
-      w="75%"
-      display="flex"
+    <form
+      style={{
+        flexDirection: "column",
+        justifyContent: "space-between",
+        height: "50%",
+        width: "75%",
+        display: "flex"
+      }}
       onSubmit={(e: any) => formik.handleSubmit(e)}
     >
       {formObjArr.map(({ type, placeholder, id }) => (
-        <>
+        <FormControl
+          key={id}
+          isInvalid={!!formik.errors[id] && !!formik.touched[id]}
+          onSubmit={(e: any) => formik.handleSubmit(e)}
+        >
+          {/* <FormLabel textTransform={"uppercase"} htmlFor="id"> {id}
+          </FormLabel> */}
           <Input
             key={id}
             border="1px solid rgba(var(--b6a,219,219,219),1)"
@@ -47,17 +59,14 @@ const ChakraFormikForm: React.FC<ChakraFormikFormPropsI> = ({
             placeholder={placeholder}
             type={type}
           />
-
-          {formik.errors[id] && formik.touched[id] ? (
-            <FormErrorMessage>{formik.errors[id]}</FormErrorMessage>
-          ) : null}
-        </>
+          <FormErrorMessage>{formik.errors[id]}</FormErrorMessage>
+        </FormControl>
       ))}
 
       <Button w="100%" type="submit">
         {submitButtonText ?? "Submit"}
       </Button>
-    </FormControl>
+    </form>
   )
 }
 

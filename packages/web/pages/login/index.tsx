@@ -2,30 +2,40 @@ import { Center, Flex, Text } from "@chakra-ui/react"
 import React from "react"
 import Image from "next/image"
 import { NextPage } from "next"
-import { FlexContainer, MainContainer } from "../../components/Layout"
 import LoginForm from "./LoginForm"
-import { FormikProvider } from "formik"
 import { RegisterForm } from "./RegisterForm"
+import { useSignInMutation, useSignUpMutation } from "../../generated/graphql.d"
 interface LoginProps {}
 
 const Login: NextPage = ({}) => {
   const [isLoginShow, setIsLoginShow] = React.useState(true)
+  const [signInWithEmailAndPassword] = useSignInMutation()
+  const [signUpWithEmailPasswordAndDisplayName] = useSignUpMutation()
   // whole page div
   //  all content div
   // upper content div
   // upper content left side
   // upper content right side (form)
   // buttom conteiner (footer)
-  const handleLogin = ({
+  const handleLogin = async ({
     email,
     password
   }: {
     email: string
     password: string
   }) => {
-    console.log(email, password)
+    try {
+      const token = await signInWithEmailAndPassword({
+        variables: { emailAndPassword: { email, password } }
+      })
+      console.log(token)
+      if (!token.data?.signIn) return
+      localStorage.setItem("access-token", token?.data.signIn)
+    } catch (e) {
+      alert(e)
+    }
   }
-  const handleRegister = ({
+  const handleRegister = async ({
     email,
     password,
     name
@@ -34,7 +44,21 @@ const Login: NextPage = ({}) => {
     password: string
     name: string
   }) => {
-    console.log(email, password, name)
+    try {
+      const res = await signUpWithEmailPasswordAndDisplayName({
+        variables: { createUserInput: { email, password, displayName: name } }
+      })
+      if (res.data?.signUp === true) {
+        const token = await signInWithEmailAndPassword({
+          variables: { emailAndPassword: { email, password } }
+        })
+        if (!token.data?.signIn) return
+        localStorage.setItem("access-token", token?.data.signIn)
+        console.log(token.data.signIn)
+      }
+    } catch (e) {
+      alert(e)
+    }
   }
   return (
     <Center backgroundColor="rgba(var(--b3f,250,250,250),1)" w="100%" h="100vh">

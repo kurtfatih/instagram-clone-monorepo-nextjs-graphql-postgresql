@@ -39,7 +39,7 @@ export type Mutation = {
   addImageToPost: Scalars['Boolean'];
   changeUserRole: Scalars['Boolean'];
   createComment: Scalars['Boolean'];
-  createPost: Scalars['Boolean'];
+  createPost?: Maybe<Scalars['Boolean']>;
   deleteAllComments: Scalars['Boolean'];
   deleteAllPosts: Scalars['Boolean'];
   deleteAllUser: Scalars['Boolean'];
@@ -49,7 +49,7 @@ export type Mutation = {
   likeComment: Scalars['Boolean'];
   likePost: Scalars['Boolean'];
   signIn: Scalars['String'];
-  signUp: Scalars['Boolean'];
+  signUp?: Maybe<Scalars['Boolean']>;
   unLikeComment: Scalars['Boolean'];
   updateCommentTextById: Scalars['Boolean'];
   updatePostDescriptionById: Scalars['Boolean'];
@@ -209,7 +209,7 @@ export type SignUpMutationVariables = Exact<{
 }>;
 
 
-export type SignUpMutation = { __typename?: 'Mutation', signUp: boolean };
+export type SignUpMutation = { __typename?: 'Mutation', signUp?: boolean | null };
 
 export type SignInMutationVariables = Exact<{
   emailAndPassword: UserLoginInput;
@@ -223,7 +223,7 @@ export type CreatePostMutationVariables = Exact<{
 }>;
 
 
-export type CreatePostMutation = { __typename?: 'Mutation', createPost: boolean };
+export type CreatePostMutation = { __typename?: 'Mutation', createPost?: boolean | null };
 
 export type DeletePostByIdMutationVariables = Exact<{
   postId: Scalars['String'];
