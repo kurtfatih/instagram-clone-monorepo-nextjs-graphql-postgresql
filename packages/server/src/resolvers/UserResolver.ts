@@ -22,7 +22,7 @@ import {
 import { UserLoginInput, UserCreateInput } from "./userLoginInputType"
 // import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
-import { generateAccessToken } from "../utils/generateJwtToken"
+import { generateToken } from "../utils/generateJwtToken"
 import { validate } from "class-validator"
 
 @Resolver(User)
@@ -67,34 +67,34 @@ export class UserResolver {
     return true
   }
 
-  @Mutation(() => String)
+  @Mutation(() => String, { nullable: true })
   async signIn(
     @Arg("emailAndPassword") { email, password }: UserLoginInput
-  ): Promise<string | undefined> {
+  ): Promise<string | undefined | Error> {
     try {
-      //user find by email
-      console.log("ı am here bitch")
-      const userFindByEmail = await User.findOneOrFail({ email })
-      const user = userFindByEmail
-      // create jwt payload instance
+      const user = await User.findOne({ email })
+
+      if (!user) throw Error("User not found by this email ")
+
+      const userHashedPassword = user.password
+      const isMatch = await bcrypt.compare(password, userHashedPassword)
+      if (!isMatch)
+        throw Error(
+          "Password not matched with email please check your password or click forgot to password"
+        )
+
       const userJwtPayload: userJWTPayloadType = {
         id: user.id,
         email: email,
         displayName: user.displayName,
         role: user.role
       }
-      const userHashedPassword = user.password
-      // check if the user hashed password and input matched
-      const isMatch = await bcrypt.compare(password, userHashedPassword) // true
-      if (isMatch) {
-        const generatedToken = generateAccessToken(userJwtPayload)
-        return generatedToken
-      }
+      const generatedToken = generateToken(userJwtPayload)
+      return generatedToken
     } catch (e: any) {
-      throw Error("User not found by email")
+      return e
     }
   }
-
   @Mutation(() => Boolean, { nullable: true })
   async signUp(
     @Arg("createUserInput") { displayName, email, password }: UserCreateInput
