@@ -4,13 +4,20 @@ import Image from "next/image"
 import { NextPage } from "next"
 import LoginForm from "./LoginForm"
 import { RegisterForm } from "./RegisterForm"
-import { useSignInMutation, useSignUpMutation } from "../../generated/graphql.d"
+import {
+  useForgotPasswordMutation,
+  useSignInWithEmailAndPasswordMutation,
+  useSignUpMutation
+} from "../../generated/graphql.d"
+import ForgotPasswordForm from "./ForgotPasswordForm"
 interface LoginProps {}
 
 const Login: NextPage = ({}) => {
   const [isLoginShow, setIsLoginShow] = React.useState(true)
-  const [signInWithEmailAndPassword] = useSignInMutation()
+  const [isShowForgotPassword, setIsShowForgotPassword] = React.useState(false)
+  const [signInWithEmailAndPassword] = useSignInWithEmailAndPasswordMutation()
   const [signUpWithEmailPasswordAndDisplayName] = useSignUpMutation()
+  const [forgotPassword] = useForgotPasswordMutation()
   // whole page div
   //  all content div
   // upper content div
@@ -30,7 +37,8 @@ const Login: NextPage = ({}) => {
       })
       console.log(token)
       if (!token.data?.signIn) return
-      localStorage.setItem("access-token", token?.data.signIn)
+      localStorage.setItem("access-token", token?.data.signIn.access_token)
+      localStorage.setItem("refresh-token", token?.data.signIn.refresh_token)
     } catch (e) {
       alert(e)
     }
@@ -53,13 +61,25 @@ const Login: NextPage = ({}) => {
           variables: { emailAndPassword: { email, password } }
         })
         if (!token.data?.signIn) return
-        localStorage.setItem("access-token", token?.data.signIn)
-        console.log(token.data.signIn)
+        localStorage.setItem("access-token", token?.data.signIn.access_token)
+        localStorage.setItem("refresh-token", token?.data.signIn.refresh_token)
+        // console.log(token.data.signIn)
       }
     } catch (e) {
       alert(e)
     }
   }
+  const handleForgotPassword = async ({ email }: { email: string }) => {
+    const getRefreshToken = localStorage.getItem("refresh-token")
+    try {
+      await forgotPassword({
+        variables: { email, refreshToken: getRefreshToken as string }
+      })
+    } catch (e) {
+      alert(e)
+    }
+  }
+
   return (
     <Center backgroundColor="rgba(var(--b3f,250,250,250),1)" w="100%" h="100vh">
       <Center
@@ -108,16 +128,43 @@ const Login: NextPage = ({}) => {
             />
             {isLoginShow ? (
               <LoginForm onSubmit={handleLogin} />
-            ) : (
+            ) : !isShowForgotPassword ? (
               <RegisterForm onSubmit={handleRegister}></RegisterForm>
-            )}
+            ) : null}
 
-            {isLoginShow ? (
-              <Text cursor={"pointer"} onClick={() => setIsLoginShow(false)}>
-                You haven't signed up yet ?{" "}
-              </Text>
+            {!isLoginShow && isShowForgotPassword ? (
+              <ForgotPasswordForm onSubmit={handleForgotPassword} />
+            ) : null}
+
+            {isLoginShow && !isShowForgotPassword ? (
+              <>
+                <Text
+                  cursor={"pointer"}
+                  onClick={() => {
+                    setIsLoginShow(false)
+                    setIsShowForgotPassword(false)
+                  }}
+                >
+                  You haven not signed up yet ?{" "}
+                </Text>
+                <Text
+                  cursor={"pointer"}
+                  onClick={() => {
+                    setIsShowForgotPassword(true)
+                    setIsLoginShow(false)
+                  }}
+                >
+                  You forgot your password ?
+                </Text>
+              </>
             ) : (
-              <Text cursor={"pointer"} onClick={() => setIsLoginShow(true)}>
+              <Text
+                cursor={"pointer"}
+                onClick={() => {
+                  setIsLoginShow(true)
+                  setIsShowForgotPassword(false)
+                }}
+              >
                 You have already sign up ?{" "}
               </Text>
             )}

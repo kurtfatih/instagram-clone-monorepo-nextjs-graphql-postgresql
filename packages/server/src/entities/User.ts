@@ -5,6 +5,7 @@ import { TypeormLoader } from "type-graphql-dataloader"
 import {
   BaseEntity,
   BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
   JoinTable,
@@ -20,7 +21,17 @@ import {
   minimumPasswordLength
 } from "instagram-clone-shared"
 
+export type UserTokenType = { access_token: string; refresh_token: string }
+
 export type RoleType = "ADMIN" | "MODERATOR" | "USER"
+
+@ObjectType()
+export class UserToken {
+  @Field() // and explicitly use it
+  readonly access_token: string
+  @Field() // and explicitly use it
+  readonly refresh_token: string
+}
 
 @Entity("User")
 @ObjectType()
@@ -28,6 +39,9 @@ export class User extends BaseEntity {
   @Field()
   @PrimaryGeneratedColumn("uuid")
   id: string
+
+  @Field(() => UserToken) // and explicitly use it
+  readonly token: UserToken
 
   @OneToMany(() => Post, (post) => post.user, {
     cascade: true,

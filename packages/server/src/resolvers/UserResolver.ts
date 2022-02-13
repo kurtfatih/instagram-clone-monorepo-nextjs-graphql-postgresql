@@ -10,7 +10,7 @@ import {
   Root,
   Subscription
 } from "type-graphql"
-import { User } from "../entities/User"
+import { User, UserToken, UserTokenType } from "../entities/User"
 import { SharedContextType, userJWTPayloadType } from "../context/types"
 import { isAuth } from "../middleware/usermiddleware"
 import {
@@ -22,8 +22,12 @@ import {
 import { UserLoginInput, UserCreateInput } from "./userLoginInputType"
 // import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
-import { generateToken } from "../utils/generateJwtToken"
+import { generateJwtToken } from "../utils/generateJwtToken"
 import { validate } from "class-validator"
+import { GraphQLScalarType } from "graphql"
+import { JsonWebTokenError, verify, VerifyErrors } from "jsonwebtoken"
+import { sendMailToUser } from "../nodemailer"
+import { saltRounds } from "../constants/bcyrptconstant"
 
 @Resolver(User)
 export class UserResolver {
@@ -67,10 +71,10 @@ export class UserResolver {
     return true
   }
 
-  @Mutation(() => String, { nullable: true })
+  @Mutation(() => UserToken, { nullable: true })
   async signIn(
     @Arg("emailAndPassword") { email, password }: UserLoginInput
-  ): Promise<string | undefined | Error> {
+  ): Promise<UserToken | undefined | Error> {
     try {
       const user = await User.findOne({ email })
 
@@ -82,19 +86,103 @@ export class UserResolver {
         throw Error(
           "Password not matched with email please check your password or click forgot to password"
         )
-
       const userJwtPayload: userJWTPayloadType = {
         id: user.id,
         email: email,
         displayName: user.displayName,
-        role: user.role
+        role: user.role,
+        iat: Math.floor(Date.now() / 1000), // now as second
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 // 1 hour exp
       }
-      const generatedToken = generateToken(userJwtPayload)
-      return generatedToken
+      const generatedAccessToken = generateJwtToken(userJwtPayload)
+
+      if (!generatedAccessToken)
+        throw Error("Something went wrong please try again later...")
+
+      const generatedRefreshToken = generateJwtToken(
+        {
+          id: user.id,
+          iat: Math.floor(Date.now() / 1000) // now as second
+        },
+        {
+          expiresIn: "365d"
+        }
+      )
+
+      if (!generatedRefreshToken)
+        throw Error("Something went wrong please try again later...")
+
+      return {
+        access_token: generatedAccessToken,
+        refresh_token: generatedRefreshToken
+      }
     } catch (e: any) {
       return e
     }
   }
+
+  @Mutation(() => Boolean, { nullable: true })
+  async forgotPassword(
+    @Arg("email") email: string,
+    @Arg("refresh_token") refresh_token: string
+  ): Promise<boolean> {
+    try {
+      const user = await User.findOne({ email })
+      if (!user) throw Error("User not found by this email ")
+
+      verify(
+        refresh_token,
+        process.env.JWT_SECRET_KEY ?? "",
+        async function (err, decoded) {
+          if (err) {
+            // if refresh token not valid generate one and send it with extension as mail
+            const generatedRefreshToken = generateJwtToken(
+              {
+                id: user.id,
+                iat: Math.floor(Date.now() / 1000) // now as second
+              },
+              {
+                expiresIn: "365d"
+              }
+            )
+            await sendMailToUser({
+              from: '"Fred Foo 👻" <foo@example.com>', // sender address
+              to: email, // list of receivers
+              subject: "Password reset email✔", // Subject line
+              text: "You can clickted link and go ?", // plain text body
+              html: `<a target="_blank" href='http://localhost:3000/handler/reset_password/#${generatedRefreshToken}'>Reset password<a>` // html body
+            })
+          } else {
+            if ((decoded as any).id === user.id) {
+              await sendMailToUser({
+                from: '"Fred Foo 👻" <foo@example.com>', // sender address
+                to: email, // list of receivers
+                subject: "Password reset email✔", // Subject line
+                text: "You can clickted link and go ?", // plain text body
+                html: `<a target="_blank" href='http://localhost:3000/handler/reset_password/#${refresh_token}'>Reset password<a>` // html body
+              })
+            } else {
+              const correctUser = await User.findOne((decoded as any).id)
+              if (!correctUser)
+                throw Error(`Something went wrong please try again later`)
+              await sendMailToUser({
+                from: '"Fred Foo 👻" <foo@example.com>', // sender address
+                to: correctUser.email, // list of receivers
+                subject: "Password reset email✔", // Subject line
+                text: "You can clickted link and go ?", // plain text body
+                html: `<a target="_blank" href='http://localhost:3000/handler/reset_password/#${refresh_token}'>Reset password<a>` // html body
+              })
+              throw Error(`Password reset email sended to ${correctUser.email}`)
+            }
+          }
+        }
+      )
+      throw Error(`Password reset email sended to ${email}`)
+    } catch (e: any) {
+      return e
+    }
+  }
+
   @Mutation(() => Boolean, { nullable: true })
   async signUp(
     @Arg("createUserInput") { displayName, email, password }: UserCreateInput
@@ -116,6 +204,34 @@ export class UserResolver {
         return new Error(`${email} already exist please try another email.`)
       }
       return new Error(e)
+    }
+  }
+
+  @Mutation(() => Boolean, { nullable: true })
+  async resetPassword(
+    @Arg("password") password: string,
+    @Arg("confirmationPassword") confirmationPassword: string,
+    @Ctx() { req }: SharedContextType
+  ): Promise<void> {
+    try {
+      const authorization = req.headers["authorization"]
+      if (!authorization) throw Error("Something went wrong please try again")
+      if (password !== confirmationPassword)
+        throw Error("Password and confirmation password are not match")
+      verify(
+        authorization,
+        process.env.JWT_SECRET_KEY ?? "",
+        async function (err, decoded) {
+          if (err) throw Error("Something went wrong please try again")
+          const user = await User.findOne({ id: (decoded as any).id })
+          if (!user) throw Error("Something went wrong please try again later")
+          user.password = await bcrypt.hash(password, saltRounds)
+          await user.save()
+        }
+      )
+      throw Error("Password changed successfully")
+    } catch (e: any) {
+      return e
     }
   }
 

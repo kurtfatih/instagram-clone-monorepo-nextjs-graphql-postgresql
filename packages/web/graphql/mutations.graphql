@@ -1,8 +1,20 @@
 mutation SignUp($createUserInput: UserCreateInput!) {
   signUp(createUserInput: $createUserInput)
 }
-mutation SignIn($emailAndPassword: UserLoginInput!) {
-  signIn(emailAndPassword: $emailAndPassword)
+mutation SignInWithEmailAndPassword($emailAndPassword: UserLoginInput!) {
+  signIn(emailAndPassword: $emailAndPassword) {
+    access_token
+    refresh_token
+  }
+}
+mutation ForgotPassword($refreshToken: String!, $email: String!) {
+  forgotPassword(refresh_token: $refreshToken, email: $email)
+}
+mutation ResetPassword($confirmationPassword: String!, $password: String!) {
+  resetPassword(
+    confirmationPassword: $confirmationPassword
+    password: $password
+  )
 }
 mutation CreatePost($postInput: UpdatePostInput!) {
   createPost(postInput: $postInput)

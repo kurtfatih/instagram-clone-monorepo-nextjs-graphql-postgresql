@@ -7,6 +7,8 @@ export type userJWTPayloadType = {
   email: string
   displayName: string
   role: RoleType | string
+  exp: number
+  iat: number
 }
 
 export type SharedContextType = {

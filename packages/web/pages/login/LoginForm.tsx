@@ -1,5 +1,4 @@
 import ChakraFormikForm from "../../components/ChakraFormikForm"
-import { useSignInMutation } from "../../generated/graphql.d"
 import { loginValidationSchema } from "../../lib/yupSchemas"
 interface LoginFormPropsI {
   onSubmit: ({ email, password }: { email: string; password: string }) => void

@@ -14,8 +14,7 @@ export const sendMailToUser = async (mailOptions: Mail.Options) => {
       pass: "6cANQWyZf4xJCH7151"
     }
   })
-  // example of send mail
-  // let info = await transporter.sendMail({
+  // example of send mail // let info = await transporter.sendMail({
   //   from: '"Fred Foo 👻" <foo@example.com>', // sender address
   //   to: "bar@example.com, baz@example.com", // list of receivers
   //   subject: "Hello ✔", // Subject line
