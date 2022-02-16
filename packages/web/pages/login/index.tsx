@@ -8,7 +8,7 @@ import {
   useForgotPasswordMutation,
   useSignInWithEmailAndPasswordMutation,
   useSignUpMutation
-} from "../../generated/graphql.d"
+} from "instagram-clone-shared/generated/graphql.d"
 import ForgotPasswordForm from "./ForgotPasswordForm"
 interface LoginProps {}
 
@@ -73,7 +73,7 @@ const Login: NextPage = ({}) => {
     const getRefreshToken = localStorage.getItem("refresh-token")
     try {
       await forgotPassword({
-        variables: { email, refreshToken: getRefreshToken as string }
+        variables: { email }
       })
     } catch (e) {
       alert(e)

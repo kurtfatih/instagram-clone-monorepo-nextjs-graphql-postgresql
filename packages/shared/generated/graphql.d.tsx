@@ -104,7 +104,6 @@ export type MutationDislikePostArgs = {
 
 export type MutationForgotPasswordArgs = {
   email: Scalars['String'];
-  refresh_token: Scalars['String'];
 };
 
 
@@ -240,7 +239,6 @@ export type SignInWithEmailAndPasswordMutationVariables = Exact<{
 export type SignInWithEmailAndPasswordMutation = { __typename?: 'Mutation', signIn?: { __typename?: 'UserToken', access_token: string, refresh_token: string } | null };
 
 export type ForgotPasswordMutationVariables = Exact<{
-  refreshToken: Scalars['String'];
   email: Scalars['String'];
 }>;
 
@@ -387,8 +385,8 @@ export type SignInWithEmailAndPasswordMutationHookResult = ReturnType<typeof use
 export type SignInWithEmailAndPasswordMutationResult = Apollo.MutationResult<SignInWithEmailAndPasswordMutation>;
 export type SignInWithEmailAndPasswordMutationOptions = Apollo.BaseMutationOptions<SignInWithEmailAndPasswordMutation, SignInWithEmailAndPasswordMutationVariables>;
 export const ForgotPasswordDocument = gql`
-    mutation ForgotPassword($refreshToken: String!, $email: String!) {
-  forgotPassword(refresh_token: $refreshToken, email: $email)
+    mutation ForgotPassword($email: String!) {
+  forgotPassword(email: $email)
 }
     `;
 export type ForgotPasswordMutationFn = Apollo.MutationFunction<ForgotPasswordMutation, ForgotPasswordMutationVariables>;
@@ -406,7 +404,6 @@ export type ForgotPasswordMutationFn = Apollo.MutationFunction<ForgotPasswordMut
  * @example
  * const [forgotPasswordMutation, { data, loading, error }] = useForgotPasswordMutation({
  *   variables: {
- *      refreshToken: // value for 'refreshToken'
  *      email: // value for 'email'
  *   },
  * });

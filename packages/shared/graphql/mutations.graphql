@@ -7,8 +7,8 @@ mutation SignInWithEmailAndPassword($emailAndPassword: UserLoginInput!) {
     refresh_token
   }
 }
-mutation ForgotPassword($refreshToken: String!, $email: String!) {
-  forgotPassword(refresh_token: $refreshToken, email: $email)
+mutation ForgotPassword($email: String!) {
+  forgotPassword(email: $email)
 }
 mutation ResetPassword($confirmationPassword: String!, $password: String!) {
   resetPassword(

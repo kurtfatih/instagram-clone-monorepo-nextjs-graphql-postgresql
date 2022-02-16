@@ -1,6 +1,6 @@
 import React from "react"
 import ChakraFormikForm from "../../components/ChakraFormikForm"
-import { registerValidationSchema } from "../../lib/yupSchemas"
+import { registerValidationSchema } from "instagram-clone-shared/lib/yupSchemas"
 
 interface RegisterFormProps {
   onSubmit: ({

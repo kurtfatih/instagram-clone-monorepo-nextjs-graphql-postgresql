@@ -1,5 +1,5 @@
 import * as yup from "yup"
-import { minimumPasswordLength } from "instagram-clone-shared"
+import { minimumPasswordLength } from "../config/index"
 // import { loginValidationSchema } from "../../lib/yupSchemas"
 const emailValidation = yup
   .string()

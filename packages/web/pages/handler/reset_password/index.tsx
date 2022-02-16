@@ -1,9 +1,8 @@
 import { useRouter } from "next/router"
-import { NextPage } from "next/types"
 import { useEffect } from "react"
 import ChakraFormikForm from "../../../components/ChakraFormikForm"
-import { useResetPasswordMutation } from "../../../generated/graphql.d"
-import { resetPasswordValidationSchema } from "../../../lib/yupSchemas"
+import { useResetPasswordMutation } from "instagram-clone-shared/generated/graphql.d"
+import { resetPasswordValidationSchema } from "instagram-clone-shared/lib/yupSchemas"
 
 const ResetPassword: React.FC = () => {
   const [resetPassword] = useResetPasswordMutation()
@@ -26,7 +25,7 @@ const ResetPassword: React.FC = () => {
         }
       })
     } catch (e: any) {
-      alert(e)
+      alert("Process time expired")
       router.push("/login")
     }
   }

@@ -1,5 +1,5 @@
 import ChakraFormikForm from "../../components/ChakraFormikForm"
-import { forgotPasswordValidationSchema } from "../../lib/yupSchemas"
+import { forgotPasswordValidationSchema } from "instagram-clone-shared/lib/yupSchemas"
 
 interface ForgotPasswordFormProps {
   onSubmit: ({ email }: { email: string }) => void

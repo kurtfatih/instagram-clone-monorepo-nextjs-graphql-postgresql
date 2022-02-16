@@ -1,5 +1,5 @@
 import ChakraFormikForm from "../../components/ChakraFormikForm"
-import { loginValidationSchema } from "../../lib/yupSchemas"
+import { loginValidationSchema } from "instagram-clone-shared/lib/yupSchemas"
 interface LoginFormPropsI {
   onSubmit: ({ email, password }: { email: string; password: string }) => void
 }
