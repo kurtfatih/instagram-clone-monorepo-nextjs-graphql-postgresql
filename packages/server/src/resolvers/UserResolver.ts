@@ -186,7 +186,6 @@ export class UserResolver {
       if (password !== confirmationPassword)
         throw Error("Password and confirmation password are not match")
       const decoded = verify(authorization, process.env.JWT_SECRET_KEY ?? "")
-      console.log("decoded", decoded)
       if (!decoded) throw Error("Something went wrong please try again")
       const user = await User.findOne({ id: (decoded as any).id })
       if (!user) throw Error("Something went wrong please try again later")
