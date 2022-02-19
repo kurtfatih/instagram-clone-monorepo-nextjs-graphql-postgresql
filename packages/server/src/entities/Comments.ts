@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm"
 import { mixedMessageWithClassValidatorForLengthError } from "../constants/validationconstants"
-import { maxCommentLength } from "instagram-clone-shared"
+import { maxCommentLength } from "instagram-clone-shared/config"
 import { Post } from "./Post"
 
 @Entity("Comments")

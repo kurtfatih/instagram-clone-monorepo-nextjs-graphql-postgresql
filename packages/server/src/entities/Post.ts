@@ -11,7 +11,7 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm"
 import { mixedMessageWithClassValidatorForLengthError } from "../constants/validationconstants"
-import { maxDescriptionLength } from "instagram-clone-shared"
+import { maxDescriptionLength } from "instagram-clone-shared/config"
 import { Comments } from "./Comments"
 import { Image } from "./Image"
 import { User } from "./User"

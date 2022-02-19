@@ -19,7 +19,7 @@ import { Post } from "./Post"
 import {
   minimumDisplayNameLength,
   minimumPasswordLength
-} from "instagram-clone-shared"
+} from "instagram-clone-shared/config"
 
 export type UserTokenType = { access_token: string; refresh_token: string }
 
